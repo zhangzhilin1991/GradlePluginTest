@@ -1,0 +1,100 @@
+apply plugin: 'com.android.application'
+apply from: "../config.gradle"
+apply plugin: 'CustomPluginInBuildSrc'
+apply plugin: 'CustomPluginInStandaloneProject'
+//apply plugin: 'com.example.plugin'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.2"
+    defaultConfig {
+        applicationId "com.example.gradletest"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+
+//CustomGreetingPluginInBuildGradleExtension is a object with a property called messag
+class CustomGreetingPluginInBuildGradleExtension {
+    String message = "Hello"
+    String greeter = "CustomPluginInBuildGradleExtension"
+}
+
+//plugin直接写无法复用，如果需要复用，则需要写在buildSrc目录下
+class CustomGreetingPluginInBuildGradle implements Plugin<Project> {
+
+    @Override
+    void apply(Project target) {
+        // Add the 'greeting' extension object
+        def extension = target.extensions.create('greeting', CustomGreetingPluginInBuildGradleExtension)
+
+        // Add a task that uses configuration from the extension object
+        target.task('showCustomPluginInBuildGradle') {
+            doLast {
+                println("task in CustomGreetingPluginInBuildGradle")
+                println "${extension.message} from ${extension.greeter}"
+            }
+        }
+    }
+}
+
+apply plugin: CustomGreetingPluginInBuildGradle
+//通过extension配置相应的plugin,此处修改message
+//greeting.greeter = "app.gradle"
+//通过配置块，配置相应的plugin
+greeting {
+    greeter = "app.gradle"
+    message = "Hello"
+}
+
+//import com.example.plugin.CustomPluginInBuildSrc.CustomPluginInBuildSrc
+//apply plugin: "com.example.plugin.CustomPluginInBuildSrc.CustomPluginInBuildSrc"
+//apply plugin: "customgradleplugin"
+
+//懒加载文件
+abstract class GreetingToFileTask extends DefaultTask {
+
+    def destination
+
+    @OutputFile
+    File getDestination() {
+        project.file(destination)
+    }
+
+    @TaskAction
+    def greet() {
+        def file = getDestination()
+        file.parentFile.mkdirs()
+        file.write 'Hello!'
+    }
+}
+
+task greet(type: GreetingToFileTask) {
+    destination = { project.greetingFile }
+}
+
+task sayGreeting(dependsOn: greet) {
+    doLast {
+        println file(greetingFile).text
+    }
+}
+
+ext.greetingFile = "$buildDir/Hello.txt"

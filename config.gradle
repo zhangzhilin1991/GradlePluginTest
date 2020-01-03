@@ -1,0 +1,13 @@
+
+println "start parse config.gradle"
+project.task("showConfig") {
+    doLast {
+        println("$project.name: showConfig")
+    }
+}
+
+/*project.task('showConfig').doLast {
+        println("$project.name.showConfig")
+}
+*/
+println "end parse config.gradle"

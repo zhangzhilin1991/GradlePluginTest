@@ -1,0 +1,22 @@
+apply plugin: 'groovy'
+//apply plugin: 'maven'
+
+//功能与apply类似
+//plugins {
+//    id 'groovy'
+//}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+}
+
+//group = 'com.example.plugin'
+//version = '1.0.0'
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository(url: uri('../repo'))
+//        }
+//    }
+//}
